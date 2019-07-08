@@ -1,0 +1,76 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-image: url("https://images.pexels.com/photos/1308624/pexels-photo-1308624.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940")
+}
+
+.container {
+    margin: 0 auto;
+    display: grid;
+    width: 600px;
+    height: 500px;
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: 2fr 1fr 1fr;
+    grid-gap: 20px;
+    grid-template-areas: 
+    "animation animation"
+    "wordDescription word"
+    "guessesDescription guesses";
+}
+
+.wordDescription, .word, .animation, .guessesDescription, .guesses {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    font-size: 28px;
+    color: white;
+    font-weight: bold;
+}
+
+.guesses {
+    grid-area: guesses;
+}
+
+.guessesDescription {
+    grid-area: guessesDescription;
+}
+
+.wordDescription {
+    grid-area: wordDescription;
+}
+
+.word {
+    grid-area: word;
+    justify-content: flex-start;
+}
+
+.animation {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    grid-area: animation;
+    justify-content: center;
+}
+
+li {
+    display: flex;
+    justify-items: center;
+    align-items: center;
+}
+
+img {
+    max-height: 100px;
+}
+
+.letter {
+    text-decoration: underline;
+    text-decoration-color: white;
+    margin-right: 15px;
+}
+
+.transparent {
+    color: transparent;
+}
