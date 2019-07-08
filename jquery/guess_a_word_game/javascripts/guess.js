@@ -2,26 +2,19 @@ function randomInteger(min, max) {
     return Math.round(Math.random() * (max - min) + min);
 }
 
-function letterInWord(letter, word) {
-    return word.split('').indexOf(letter) >= 0;
+function isInLetters(letterValue, letters) {
+    var lettersValues = letters.map(function (letter) {
+        return letter.value;
+    });
+    return lettersValues.indexOf(letterValue) >= 0;
 }
-
-var randomWord = (function () {
-    var words = ['ABIBLIOPHOBIA', 'LOLLYGAG', 'BUMFUZZLE', 'CATTYWAMPUS',
-        'FLIBBERTIGGIBET', 'NUDIUSTERTIAN', 'ABSQUATULATE'];
-    return function () {
-        if (words.length === 0) { return false; };
-        var idx = randomInteger(0, words.length - 1);
-        return words.splice(idx, 1)[0];
-    }
-})();
 
 function formatLetters(word) {
     var letters = word.split('');
-    return letters.map(function (letter) {
+    return letters.map(function (letterValue) {
         return {
-            value: letter,
-            display: false,
+            value: letterValue,
+            crypted: true,
         };
     });
 }
@@ -34,28 +27,32 @@ function guessInGuesses(guesses, guess) {
 
 function cryptWord(formattedLetters) {
     return formattedLetters.map(function (formatLetter) {
-        if (formatLetter.display) {
-            return formatLetter.value;
+        if (formatLetter.crypted) {
+            return '_';
         }
-        return "_";
-    })
+        return formatLetter.value;
+    });
 }
 
 function allLetersFound(formattedLetters) {
     return formattedLetters.every(function (letter) {
-        return letter.display;
+        return !letter.crypted;
     });
 }
 
-function successMessage() {
-    $(".container").load(function () {
-        alert('Congratulations ! Word Found !');
-    });
-}
+var randomWord = (function () {
+    var words = ['ABIBLIOPHOBIA', 'LOLLYGAG', 'BUMFUZZLE', 'CATTYWAMPUS',
+        'FLIBBERTIGGIBET', 'NUDIUSTERTIAN', 'ABSQUATULATE'];
+    return function () {
+        if (words.length === 0) { return false; };
+        var idx = randomInteger(0, words.length - 1);
+        return words.splice(idx, 1)[0];
+    }
+})();
 
 function Game() {
-    this.word = randomWord();
-    this.letters = formatLetters(this.word);
+    var word = randomWord();
+    this.letters = formatLetters(word);
     this.guesses = [];
     this.tries = 6;
 }
@@ -66,8 +63,8 @@ Game.prototype = {
         if (guessInGuesses(this.guesses, letterValue)) { return; }
         this.guesses.push(letterValue);
 
-        if (letterInWord(letterValue, this.word)) {
-            this.displayAll(letterValue);
+        if (isInLetters(letterValue, this.letters)) {
+            this.decrypt(letterValue);
         } else {
             this.tries -= 1;
             if (this.tries <= 0) {
@@ -79,10 +76,10 @@ Game.prototype = {
         this.checkCompletion();
     },
 
-    displayAll: function (letterValue) {
+    decrypt: function (letterValue) {
         this.letters.forEach(function (letter) {
             if (letterValue === letter.value) {
-                letter.display = true;
+                letter.crypted = false;
             }
         })
     },
@@ -97,13 +94,13 @@ Game.prototype = {
     },
 
     reboot: function () {
-        this.word = randomWord();
-        if (!this.word) {
+        var word = randomWord();
+        if (!word) {
             display(this);
             message("over");
             return;
         }
-        this.letters = formatLetters(this.word);
+        this.letters = formatLetters(word);
         this.tries = 6;
         this.guesses = [];
         display(this);
@@ -141,22 +138,6 @@ function message(type) {
     }
 }
 
-function showLetter($letter) {
-    $letter.removeClass("transparent");
-}
-
-function hideLetter($letter) {
-    $letter.addClass("transparent");
-}
-
-function generateLetter(letterValue, display) {
-    var $letter = $("<span class='letter'>" + letterValue + "</span>");
-    if (!display) {
-        hideLetter($letter);
-    }
-    return $letter;
-}
-
 function displayWord(cryptedWord) { // format : ['_', 'A', '_', etc...]
     cryptedWord.forEach(function (letter) {
         $(".word").append($("<span class='letter'>" + letter + "</span>"));
@@ -176,12 +157,16 @@ function display(anyGame) {
     displayGuesses(anyGame.guesses);
 }
 
+function validKeypress(letter) {
+    return /\b([a-z]{1})\b/i.test(letter); // excludes "ENTER" as well
+}
+
 $(document).ready(function () {
     var game = new Game();
     display(game);
     $('body').keypress(function (e) {
         var letter = e.key.toUpperCase();
-        if (/[a-z]/i.test(letter)) {
+        if (validKeypress(letter)) {
             game.guess(letter);
             display(game);
         }
