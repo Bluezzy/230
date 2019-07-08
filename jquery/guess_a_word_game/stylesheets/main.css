@@ -31,6 +31,7 @@ body {
 
 .guesses {
     grid-area: guesses;
+    justify-content: flex-start;
 }
 
 .guessesDescription {
